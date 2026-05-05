@@ -12,7 +12,7 @@ Options:
   --projectname  Name of the Django project to create
   --appname      Name of the Django app to create
   --username     Optional admin username for createsuperuser
-  --email        Optional admin email for createsuperuser
+  --email        Optional admin email for createsuperuser (will prompt for password)
   --help         Show this help message
 EOF
 }
@@ -25,18 +25,34 @@ EMAIL=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --projectname)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --projectname requires a value"
+        exit 1
+      fi
       PROJECT_NAME="$2"
       shift 2
       ;;
     --appname)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --appname requires a value"
+        exit 1
+      fi
       APP_NAME="$2"
       shift 2
       ;;
     --username)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --username requires a value"
+        exit 1
+      fi
       USERNAME="$2"
       shift 2
       ;;
     --email)
+      if [[ -z "${2:-}" ]]; then
+        echo "Error: --email requires a value"
+        exit 1
+      fi
       EMAIL="$2"
       shift 2
       ;;
@@ -94,16 +110,18 @@ pip install --upgrade pip
 pip install django djangorestframework
 
 django-admin startproject "$PROJECT_NAME" .
-cd "$PROJECT_NAME"
-django-admin startapp "$APP_NAME"
-cd ..
+python manage.py startapp "$APP_NAME"
 
 echo "Applying migrations..."
 python manage.py migrate
 
 if [[ -n "$USERNAME" && -n "$EMAIL" ]]; then
   echo "Creating superuser '$USERNAME'..."
-  python manage.py createsuperuser --username "$USERNAME" --email "$EMAIL"
+  if [[ -z "${DJANGO_SUPERUSER_PASSWORD:-}" ]]; then
+    python manage.py createsuperuser --username "$USERNAME" --email "$EMAIL"
+  else
+    DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" python manage.py createsuperuser --username "$USERNAME" --email "$EMAIL" --noinput
+  fi
 fi
 
 echo "Project '$PROJECT_NAME' created successfully."

@@ -5,6 +5,14 @@
 Python version: Python 3.9.5
 
 ### Create a project
+The project structure is:
+```
+$PROJECT_NAME/
+  manage.py
+  $PROJECT_NAME/           <- config dir
+    settings.py
+  $APP_NAME/
+```
 Create a new Django project named **library_project**, then start a new app called **library_app**.
 
 #### Option 1: Create manually
@@ -15,24 +23,24 @@ Create a new Django project named **library_project**, then start a new app call
 mkdir library_project
 cd library_project
 
-# Create a virtual environment to isolate our package dependencies locally
-python3 -m venv .venv
+# Upgrade pip (Optional)
+pip install --upgrade pip
 
+# Create a virtual environment to isolate our package dependencies locally
 # If you already have .venv, just activate it first and skip creating it.
+python3 -m venv .venv
 source .venv/bin/activate
 
 # Install Django and Django REST framework into the virtual environment
-pip install djangorestframework
+pip install django djangorestframework
 
 # Set up a new project with a single application
 django-admin startproject library_project .
-cd library_project
-django-admin startapp library_app
-cd ..
+python manage.py startapp library_name
 ```
 
 ##### Apply migrations - Now sync your database for the first time:
-After creating the project and activating the virtual environment (```source .venv/bin/activate```), run it from the project root:
+After creating the project and activating the virtual environment, run it from the project root:
 ```
 python manage.py migrate
 ```
@@ -59,7 +67,7 @@ Django requires a user account with staff/superuser permissions to log into the 
 
 In this project, you’ll use this admin account to sign in and verify authentication flow. It also gives you a ready-to-use user for testing admin-only or authenticated API behavior. This is the first real user in your app, and it gives you a known login (admin) to use while you build and test the project.
 
-#### Start the development server:
+##### Start the development server:
 ```
 python manage.py runserver
 ```
