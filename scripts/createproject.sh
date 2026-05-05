@@ -58,6 +58,16 @@ if [[ -z "$PROJECT_NAME" || -z "$APP_NAME" ]]; then
   exit 1
 fi
 
+if [[ ! "$PROJECT_NAME" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+  echo "Error: project name must be a valid Python identifier (letters, digits, underscores; cannot start with digit)"
+  exit 1
+fi
+
+if [[ ! "$APP_NAME" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+  echo "Error: app name must be a valid Python identifier (letters, digits, underscores; cannot start with digit)"
+  exit 1
+fi
+
 if [[ -n "$USERNAME" && -z "$EMAIL" ]] || [[ -z "$USERNAME" && -n "$EMAIL" ]]; then
   echo "Error: --username and --email must both be provided if one is used."
   usage
@@ -66,6 +76,11 @@ fi
 
 if [[ -d "$PROJECT_NAME" ]]; then
   echo "Error: directory '$PROJECT_NAME' already exists."
+  exit 1
+fi
+
+if ! command -v python3 &> /dev/null; then
+  echo "Error: python3 is not installed or not in PATH"
   exit 1
 fi
 

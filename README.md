@@ -8,6 +8,8 @@ Python version: Python 3.9.5
 Create a new Django project named **library_project**, then start a new app called **library_app**.
 
 #### Option 1: Create manually
+> Note: If you already have **.venv**, just activate it (```source .venv/bin/activate```) first and skip creating it. 
+
 ```
 # Create the project directory
 mkdir library_project
@@ -15,6 +17,8 @@ cd library_project
 
 # Create a virtual environment to isolate our package dependencies locally
 python3 -m venv .venv
+
+# If you already have .venv, just activate it first and skip creating it.
 source .venv/bin/activate
 
 # Install Django and Django REST framework into the virtual environment
@@ -60,8 +64,6 @@ In this project, you’ll use this admin account to sign in and verify authentic
 python manage.py runserver
 ```
 
-> Note: If you already have **.venv**, just activate it (```source .venv/bin/activate```) first and skip creating it. 
-
 #### Option 2: Create via a script
 - Accepts: --projectname <name> and --appname <name> (required), --username <name> and --email <email> (optional)
 - Creates the project directory, virtualenv, installs Django and Django REST framework, scaffolds the project/app, applies migrations, and optionally creates a superuser
@@ -69,5 +71,5 @@ python manage.py runserver
 ./scripts/createproject.sh --projectname library_project --appname library_app --username admin --email admin@example.com
 ```
 
-Once you've set up a database and the initial user is created and ready to go, open up the app's directory and we'll get coding...
+Once you've set up the database and created the initial user, you're ready to start developing. The next sections will guide you through building the library application.
 
