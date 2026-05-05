@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 usage() {
   cat <<EOF
@@ -111,6 +112,14 @@ pip install django djangorestframework
 
 django-admin startproject "$PROJECT_NAME" .
 python manage.py startapp "$APP_NAME"
+
+echo "Updating settings.py..."
+SETTINGS_FILE="$PROJECT_NAME/settings.py"
+if [[ ! -f "$SETTINGS_FILE" ]]; then
+  echo "Error: settings.py not found at $SETTINGS_FILE"
+  exit 1
+fi
+python3 "$SCRIPT_DIR/update_settings_installed_apps.py" "$SETTINGS_FILE" "$APP_NAME"
 
 echo "Applying migrations..."
 python manage.py migrate

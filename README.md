@@ -39,6 +39,21 @@ django-admin startproject library_project .
 python manage.py startapp library_name
 ```
 
+##### Configure the Project
+Add your new app to the INSTALLED_APPS in library_project/settings.py:
+```
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'library_app',  # Add this line
+    'rest_framework',  # Add this for DRF
+]
+```
+
 ##### Apply migrations - Now sync your database for the first time:
 After creating the project and activating the virtual environment, run it from the project root:
 ```
