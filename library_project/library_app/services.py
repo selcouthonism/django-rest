@@ -1,6 +1,7 @@
 from typing import List, Optional
 from .domain import Book
 from .interfaces import IBookRepository
+import random
 
 
 class BookService:
@@ -20,8 +21,14 @@ class BookService:
         if not isinstance(book_data, dict):
             raise ValueError("Invalid book payload")
 
+        # validate required fields
+        required_keys = {"title", "author_id", "published_year"}
+        missing_keys = required_keys - book_data.keys()
+        if missing_keys:
+            raise ValueError(f"Missing required fields: {missing_keys}")
+
         book = Book(
-            id=int(book_data["id"]),
+            id=random.randint(100000, 999999),
             title=str(book_data["title"]),
             author_id=int(book_data["author_id"]),
             published_year=int(book_data["published_year"]),
@@ -33,9 +40,14 @@ class BookService:
         existing_book = self.get_book_by_id(id)
         updated_book = Book(
             id=id,
-            title=str(book_data.get("title", existing_book.title)),
-            author_id=int(book_data.get("author_id", existing_book.author_id)),
-            published_year=int(book_data.get("published_year", existing_book.published_year)),
+            title=str(book_data.get("title") or existing_book.title),
+            author_id=int(book_data.get("author_id") or existing_book.author_id),
+            published_year=int(book_data.get("published_year") or existing_book.published_year),
+            
+            #If a key exists with value None (e.g., {"author_id": None}), int(None) raises TypeError.
+            #title=str(book_data.get("title", existing_book.title)),
+            #author_id=int(book_data.get("author_id", existing_book.author_id)),
+            #published_year=int(book_data.get("published_year", existing_book.published_year)),
         )
         self.repository.update(updated_book)
         return updated_book

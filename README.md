@@ -90,7 +90,6 @@ python manage.py runserver
 
 Option 2: Run Python directly from the venv
 ```
-cd library_project
 .venv/bin/python --version
 .venv/bin/python manage.py runserver
 ```
@@ -127,18 +126,45 @@ library_project/
 
 - `Domain Layer (library_app/domain.py)` - This layer holds our enterprise business rules and entities.
 - `Interface Layer (library_app/interfaces.py)` - This layer defines the contracts (ports) that the outer layers must implement. The service layer will depend *only* on this interface.
-- `Use Case / Service Layer (library_app/services.py)` - This layer contains the application-specific business rules. Notice how it strictly relies on IColorRepository and has zero knowledge of Django or how the database is implemented.
+- `Use Case / Service Layer (library_app/services.py)` - This layer contains the application-specific business rules. Notice how it strictly relies on IBookRepository and has zero knowledge of Django or how the database is implemented.
 - `Infrastructure Layer (library_app/infrastructure.py)` - This layer implements the interfaces defined earlier. Here, we build our in-memory database adapter.
 - `Dependency Injection (library_app/dependencies.py)` - To wire the application together cleanly, we instantiate our specific adapters and inject them into the services.
 - `Delivery Layer / Controllers (library_app/views.py)` - The Django views act as simple delivery mechanisms. They parse the HTTP request, pass data to the Use Cases, and format the response.
+- `Routing (library_app/urls.py & library_project/urls.py)` - Make sure to include your app's URLs in the main project configuration.
 
 ## API Paths:
 ```
 GET /api/books/
 GET /api/books/{id}
 POST /api/books/
-PUT /api/books/
+PUT /api/books/{id}
 DELETE /api/books/{id}
+```
+
+
+GET /api/books/
+```
+curl -X GET -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/
+```
+
+GET /api/books/{id}
+```
+curl -X GET -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/917840/
+```
+
+POST /api/books/
+```
+curl -X POST -H "Content-Type: application/json" -d '{"title":"pride", "published_year":1880,"author_id":1}' http://127.0.0.1:8000/api/books/
+```
+
+PUT /api/books/{id}
+```
+curl -X PUT -H "Content-Type: application/json" -d '{"id":917840 , "title":"pride", "published_year":1990,"author_id":1}' http://127.0.0.1:8000/api/books/917840/
+```
+
+DELETE PUT /api/books/{id}
+```
+curl -X DELETE -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/917840/
 ```
 
 
