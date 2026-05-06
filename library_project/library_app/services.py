@@ -1,6 +1,7 @@
-from typing import List, Optional, Dict
-from .models import Book
+from typing import List, Optional
+from .domain import Book
 from .interfaces import IBookRepository
+
 
 class BookService:
     def __init__(self, repository: IBookRepository):
@@ -14,20 +15,31 @@ class BookService:
         if not existing_book:
             raise ValueError(f"Book with ID '{id}' does not exist.")
         return existing_book
-    
-    def create_book(self, book_data: Book) -> Book:
-        book = Book(**book_data)
+
+    def create_book(self, book_data: dict) -> Book:
+        if not isinstance(book_data, dict):
+            raise ValueError("Invalid book payload")
+
+        book = Book(
+            id=int(book_data["id"]),
+            title=str(book_data["title"]),
+            author_id=int(book_data["author_id"]),
+            published_year=int(book_data["published_year"]),
+        )
         self.repository.save(book)
         return book
 
-    def update_book(self, id: int, book_data: Book) -> Book:
-        # Check if the book exists before updating
+    def update_book(self, id: int, book_data: dict) -> Book:
         existing_book = self.get_book_by_id(id)
-        updated_book = Book(id=id, **book_data)
+        updated_book = Book(
+            id=id,
+            title=str(book_data.get("title", existing_book.title)),
+            author_id=int(book_data.get("author_id", existing_book.author_id)),
+            published_year=int(book_data.get("published_year", existing_book.published_year)),
+        )
         self.repository.update(updated_book)
         return updated_book
 
     def delete_book(self, id: int) -> None:
-         # Check if the book exists before deleting
-        existing_book = self.get_book_by_id(id)
+        self.get_book_by_id(id)
         self.repository.delete(id)

@@ -2,8 +2,6 @@
 
 ## Project Setup
 
-Python version: Python 3.9.5
-
 ### Create a project
 The project structure is:
 ```
@@ -83,8 +81,18 @@ Django requires a user account with staff/superuser permissions to log into the 
 In this project, you’ll use this admin account to sign in and verify authentication flow. It also gives you a ready-to-use user for testing admin-only or authenticated API behavior. This is the first real user in your app, and it gives you a known login (admin) to use while you build and test the project.
 
 ##### Start the development server:
+Option 1: Activate the project venv
 ```
+source .venv/bin/activate
+python --version
 python manage.py runserver
+```
+
+Option 2: Run Python directly from the venv
+```
+cd library_project
+.venv/bin/python --version
+.venv/bin/python manage.py runserver
 ```
 
 #### Option 2: Create via a script
@@ -95,4 +103,42 @@ python manage.py runserver
 ```
 
 Once you've set up the database and created the initial user, you're ready to start developing. The next sections will guide you through building the library application.
+
+## Project Structure
+```
+library_project/
+├── manage.py
+├── library_project/          # Django core settings
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+└── library_app/              # Our application
+    ├── __init__.py
+    ├── apps.py
+    ├── domain.py           # Layer 1: Entities
+    ├── interfaces.py       # Layer 2: Abstract Ports
+    ├── infrastructure.py   # Layer 3: DB Adapters
+    ├── services.py         # Layer 4: Use Cases / Business Logic
+    ├── dependencies.py     # Dependency Injection Container
+    ├── views.py            # Layer 5: Delivery / Controllers
+    └── urls.py             # Layer 5: Routing
+```
+
+- `Domain Layer (library_app/domain.py)` - This layer holds our enterprise business rules and entities.
+- `Interface Layer (library_app/interfaces.py)` - This layer defines the contracts (ports) that the outer layers must implement. The service layer will depend *only* on this interface.
+- `Use Case / Service Layer (library_app/services.py)` - This layer contains the application-specific business rules. Notice how it strictly relies on IColorRepository and has zero knowledge of Django or how the database is implemented.
+- `Infrastructure Layer (library_app/infrastructure.py)` - This layer implements the interfaces defined earlier. Here, we build our in-memory database adapter.
+- `Dependency Injection (library_app/dependencies.py)` - To wire the application together cleanly, we instantiate our specific adapters and inject them into the services.
+- `Delivery Layer / Controllers (library_app/views.py)` - The Django views act as simple delivery mechanisms. They parse the HTTP request, pass data to the Use Cases, and format the response.
+
+## API Paths:
+```
+GET /api/books/
+GET /api/books/{id}
+POST /api/books/
+PUT /api/books/
+DELETE /api/books/{id}
+```
+
 
