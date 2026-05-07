@@ -104,6 +104,13 @@ Option 2: Run Python directly from the venv
 Once you've set up the database and created the initial user, you're ready to start developing. The next sections will guide you through building the library application.
 
 ## Project Structure
+To build this application using Clean Architecture in Django, we will strictly separate our concerns into layers: 
+- Domain (Entities),
+- Interfaces (Abstract Repositories/Ports), 
+- Use Cases (Services),
+- Infrastructure/Delivery (In-Memory Database and Django Views).
+
+Following the Dependency Inversion principle, our Services will only depend on Interfaces, completely isolating our core business logic from Django and the database implementation.
 ```
 library_project/
 ├── manage.py
@@ -116,7 +123,7 @@ library_project/
     ├── __init__.py
     ├── apps.py
     ├── domain.py           # Layer 1: Entities
-    ├── interfaces.py       # Layer 2: Abstract Ports
+    ├── interfaces.py       # Layer 2: Abstract Ports (Contracts)
     ├── infrastructure.py   # Layer 3: DB Adapters
     ├── services.py         # Layer 4: Use Cases / Business Logic
     ├── dependencies.py     # Dependency Injection Container
@@ -124,7 +131,7 @@ library_project/
     └── urls.py             # Layer 5: Routing
 ```
 
-- `Domain Layer (library_app/domain.py)` - This layer holds our enterprise business rules and entities.
+- `Domain Layer (library_app/domain.py)` - This layer holds our enterprise business rules and entities. They are pure Python dataclasses with no knowledge of the outside world.
 - `Interface Layer (library_app/interfaces.py)` - This layer defines the contracts (ports) that the outer layers must implement. The service layer will depend *only* on this interface.
 - `Use Case / Service Layer (library_app/services.py)` - This layer contains the application-specific business rules. Notice how it strictly relies on IBookRepository and has zero knowledge of Django or how the database is implemented.
 - `Infrastructure Layer (library_app/infrastructure.py)` - This layer implements the interfaces defined earlier. Here, we build our in-memory database adapter.
