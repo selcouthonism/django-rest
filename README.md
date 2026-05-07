@@ -140,6 +140,42 @@ library_project/
 - `Routing (library_app/urls.py & library_project/urls.py)` - Make sure to include your app's URLs in the main project configuration.
 
 ## API Paths:
+
+### Authors
+```
+GET /api/authors/ 
+GET /api/authors/{id} 
+POST /api/authors/ 
+PUT /api/authors/{id} 
+DELETE /api/authors/{id}
+```
+
+#### GET /api/authors/
+```
+curl -X GET -H "Content-Type: application/json" http://127.0.0.1:8000/api/authors/
+```
+
+#### GET /api/authors/
+```
+curl -X GET -H "Content-Type: application/json" http://127.0.0.1:8000/api/authors/917840/
+```
+
+#### POST /api/authors/
+```
+curl -i -X POST -H "Content-Type: application/json" -d '{"name": "Jane", "surname":"Austin", "date_of_birth":"1880-02-12" }' http://127.0.0.1:8000/api/authors/
+```
+
+#### PUT /api/authors/{id}
+```
+curl -i -X PUT -H "Content-Type: application/json" -d '{"name": "Jane", "surname":"Austin", "date_of_birth":"1883-02-12"}' http://127.0.0.1:8000/api/authors/56a849b8-dc24-4555-89da-570946682009/
+```
+
+#### DELETE PUT /api/authors/{id}
+```
+curl -i -X DELETE -H "Content-Type: application/json" http://127.0.0.1:8000/api/authors/56a849b8-dc24-4555-89da-570946682009/
+```
+
+### Books
 ```
 GET /api/books/
 GET /api/books/{id}
@@ -148,30 +184,29 @@ PUT /api/books/{id}
 DELETE /api/books/{id}
 ```
 
-
-GET /api/books/
+#### GET /api/books/
 ```
 curl -X GET -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/
 ```
 
-GET /api/books/{id}
+#### GET /api/books/{id}
 ```
 curl -X GET -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/917840/
 ```
 
-POST /api/books/
+#### POST /api/books/
 ```
-curl -X POST -H "Content-Type: application/json" -d '{"title":"pride", "published_year":1880,"author_id":1}' http://127.0.0.1:8000/api/books/
-```
-
-PUT /api/books/{id}
-```
-curl -X PUT -H "Content-Type: application/json" -d '{"id":917840 , "title":"pride", "published_year":1990,"author_id":1}' http://127.0.0.1:8000/api/books/917840/
+curl -i -X POST -H "Content-Type: application/json" -d '{"title":"pride", "published_year":1880,"author_id":"56a849b8-dc24-4555-89da-570946682009"}' http://127.0.0.1:8000/api/books/
 ```
 
-DELETE PUT /api/books/{id}
+#### PUT /api/books/{id}
 ```
-curl -X DELETE -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/917840/
+curl -i -X PUT -H "Content-Type: application/json" -d '{"id":917840 , "title":"pride", "published_year":1990,"author_id":"56a849b8-dc24-4555-89da-570946682009"}' http://127.0.0.1:8000/api/books/bcbacaa7-ec36-4f25-8c50-41a52672ce6a/
+```
+
+#### DELETE PUT /api/books/{id}
+```
+curl -i -X DELETE -H "Content-Type: application/json" http://127.0.0.1:8000/api/books/bcbacaa7-ec36-4f25-8c50-41a52672ce6a/
 ```
 
 
