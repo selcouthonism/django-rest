@@ -1,8 +1,15 @@
 from dataclasses import dataclass
 
 @dataclass
+class Author:
+    id: str
+    name: str
+    surname: str
+    date_of_birth: str  # YYYY-MM-DD
+
+@dataclass
 class Book:
-    id: int
+    id: str
     title: str
-    author_id: int
     published_year: int
+    author: Author
