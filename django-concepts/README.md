@@ -34,7 +34,7 @@ pip install django djangorestframework
 
 # Set up a new project with a single application
 django-admin startproject library_project .
-python manage.py startapp library_name
+python manage.py startapp library_app
 ```
 
 ##### Configure the Project
