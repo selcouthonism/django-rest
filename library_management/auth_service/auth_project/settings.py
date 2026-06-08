@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,11 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-&juh-hl7)q*n-gb9%61cquyj6*l=+ynl!oi(5$92w3!sw#s174'
+ACCESS_TOKEN_EXPIRATION_MINUTES = 15
+REFRESH_TOKEN_EXPIRATION_DAYS = 7
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "auth_service"]  # Add service names for Docker Compose
 
 
 # Application definition
@@ -37,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_app',  # Add this line to include your app in the project
+    #'rest_framework',  # Add this for DRF
 ]
 
 MIDDLEWARE = [
@@ -73,12 +78,38 @@ WSGI_APPLICATION = 'auth_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+"""
+
+ENV = os.environ.get('ENVIRONMENT', 'dev')
+
+if ENV == 'prod':
+    # PostgreSQL for Production
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'auth_db',
+            'USER': 'db_user',
+            'PASSWORD': 'db_password',
+            'HOST': 'localhost', # or DB container name
+            #'HOST': 'db', # Matches the Docker Compose service name
+            'PORT': '5432',
+        }
+    }
+else:
+    # In-Memory SQLite for Dev
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
