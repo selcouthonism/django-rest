@@ -5,6 +5,7 @@ This repository contains a library management architecture designed for containe
 - [Nginx](#nginx)
 - [Database](#database)
 - [Authentication Service](#authentication-service)
+- [.env](#env-file)
 
 ## Launch The Library Management System
 This section explains how to start the library management stack using Docker Compose. It includes the gateway, auth service, and database containers required for the end-to-end demo.
@@ -219,4 +220,16 @@ python3 manage.py showmigrations && echo 'DB:' && ls -l db.sqlite3 && echo 'MIGR
 docker compose exec db psql -U "db_auth_user" -d "${DB_NAME}" -c "SELECT * FROM auth."user" LIMIT 5;"
 
 docker exec postgres_db psql -U auth_db_user -d auth_db -c "SELECT * FROM auth."user" LIMIT 5;"
+```
+
+## .env file
+```
+DB_NAME=auth_db
+DB_USER=auth_db_user
+DB_PASSWORD=auth_db_password
+DB_HOST=db # Matches the Docker Compose service name
+DB_PORT=5432
+
+ENVIRONMENT=prod
+SECRET_KEY=your-super-secret-django-key
 ```
