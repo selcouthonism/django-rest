@@ -1,0 +1,72 @@
+# name: auth_service
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: postgres_db
+    #env_file:
+    #  - ../database/.env.db-creds
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: false
+
+      - type: bind
+        source: ../database/db/init
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+    restart: unless-stopped
+    networks:
+      - auth_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  auth_service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: auth_service
+    # --fake-initial tells Django to mark initial migrations as applied when the expected tables already exist.
+    # This avoids duplicate table creation during Docker Compose startup.
+    command: >
+      sh -c "python manage.py migrate --fake-initial --noinput &&
+             gunicorn auth_project.wsgi:application --bind 0.0.0.0:8000 --workers 3"       
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}
+      - SECRET_KEY=${SECRET_KEY}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_PORT=${DB_PORT}
+    networks:
+      - auth_net
+      - backend_app_net
+    depends_on:
+      db:
+        condition: service_healthy
+    # We do not expose port 8000 to the host machine. 
+    # Nginx handles external traffic.
+
+volumes:
+  postgres_data:
+
+networks:
+  auth_net:
+  backend_app_net:

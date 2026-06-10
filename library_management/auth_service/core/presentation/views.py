@@ -18,6 +18,7 @@ hasher = StandardPasswordHasher()
 
 @csrf_exempt
 def login_api(request):
+    print("Received request at /api/v1/login")  # Debug log
     if request.method == 'POST':
         data = json.loads(request.body)
         use_case = LoginUseCase(user_repo, hasher, token_service)
@@ -32,6 +33,7 @@ def login_api(request):
 
 @csrf_exempt
 def verify_api(request):
+    print("Received request at /api/v1/verify")  # Debug log
     if request.method == 'GET':
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):

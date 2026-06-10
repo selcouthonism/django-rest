@@ -26,7 +26,7 @@ ACCESS_TOKEN_EXPIRATION_MINUTES = 15
 REFRESH_TOKEN_EXPIRATION_DAYS = 7
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "auth_service"]  # Add service names for Docker Compose
 
@@ -90,16 +90,15 @@ DATABASES = {
 ENV = os.environ.get('ENVIRONMENT', 'dev')
 
 if ENV == 'prod':
-    # PostgreSQL for Production
+    # PostgreSQL for Production (Note: In a real setup, use environment variables for these settings)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'auth_db',
-            'USER': 'db_user',
-            'PASSWORD': 'db_password',
-            'HOST': 'localhost', # or DB container name
-            #'HOST': 'db', # Matches the Docker Compose service name
-            'PORT': '5432',
+            "NAME": os.getenv("POSTGRES_DB"),
+            "USER": os.getenv("POSTGRES_USER"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("POSTGRES_HOST"), # Matches the Docker Compose service name
+            "PORT": os.getenv("POSTGRES_PORT"),
         }
     }
 else:
