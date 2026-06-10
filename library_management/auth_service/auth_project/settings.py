@@ -48,10 +48,14 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # Note: Disable CsrfViewMiddleware if you strictly use JWTs for all endpoints
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # Add our custom Global Exception Middleware here
+    'core.presentation.middleware.GlobalExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'auth_project.urls'
