@@ -4,7 +4,7 @@ from core.application.use_cases.verify_token_use_case import VerifyTokenUseCase
 from core.application.exceptions import AuthenticationError
 
 class TestVerifyTokenUseCase(unittest.TestCase):
-    """Testing the Verify Token Use Case"""
+    """Testing the Verify Token Use Case, test how the application handles the success and failure states of the interface."""
     def setUp(self):
         self.mock_token_service = MagicMock()
         self.use_case = VerifyTokenUseCase(token_service=self.mock_token_service)
