@@ -11,3 +11,8 @@ class ITokenService(ABC):
     def verify_access_token(self, token: str) -> dict:
         """Returns decoded payload if valid, raises exception if not."""
         pass
+
+    @abstractmethod
+    def verify_refresh_token(self, token: str) -> dict:
+        """Returns decoded payload if refresh token is valid."""
+        pass

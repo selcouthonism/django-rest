@@ -18,7 +18,7 @@ class JwtTokenService(ITokenService):
         }
         refresh_payload = {
             'user_id': user.user_id,
-            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=settings.REFRESH_TOKEN_EXPIRATION_DAYS)
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=settings.REFRESH_TOKEN_EXPIRATION_DAYS)
         }
         
         access_token = jwt.encode(access_payload, settings.SECRET_KEY, algorithm='HS256')
@@ -33,3 +33,13 @@ class JwtTokenService(ITokenService):
 
     def verify_access_token(self, token: str) -> dict:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+    
+    def verify_refresh_token(self, token: str) -> dict:
+        try:
+            # Refresh tokens should ideally be verified against the DB (e.g., checking if revoked)
+            # For stateless JWTs, we just decode and check signature/expiration
+            return jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise Exception("Refresh token expired")
+        except jwt.InvalidTokenError:
+            raise Exception("Invalid refresh token")

@@ -23,6 +23,7 @@ ON CONFLICT (email) DO NOTHING;
 INSERT INTO auth.user_roles (user_id, role_id) VALUES
 ((SELECT id FROM auth.user WHERE email = 'test.admin@example.com'), (SELECT id FROM auth.role WHERE role_name = 'ADMIN')),
 ((SELECT id FROM auth.user WHERE email = 'alice.smith@example.com'), (SELECT id FROM auth.role WHERE role_name = 'ADMIN')),
+((SELECT id FROM auth.user WHERE email = 'bob.johnson@example.com'), (SELECT id FROM auth.role WHERE role_name = 'ADMIN')),
 ((SELECT id FROM auth.user WHERE email = 'bob.johnson@example.com'), (SELECT id FROM auth.role WHERE role_name = 'USER')),
 ((SELECT id FROM auth.user WHERE email = 'charlie.brown@example.com'), (SELECT id FROM auth.role WHERE role_name = 'USER'))
 ON CONFLICT (user_id, role_id) DO NOTHING;

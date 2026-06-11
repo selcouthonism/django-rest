@@ -60,7 +60,7 @@ Copy the access_token from Test 1 and pass it in the Authorization header.
 TOKEN=$(curl -s -X POST http://localhost/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"username": "test_admin", "password": "securepassword123"}' \
-  | jq -r '.access_token')                                        
+  | jq -r '.access_token')
 ```
 
 ##### Call textbook service
@@ -100,6 +100,37 @@ Because we used the ```mendhak/http-https-echo``` image for our textbook rental 
 ```
 Look at the headers block in the response. Nginx extracted ```x-user-id``` and ```x-user-roles``` from the auth_service and successfully injected them into the downstream request. The textbook_rental service now knows exactly who is making the request without having to parse the JWT itself.
 
+#### 3. Refresh The Token
+Access tokens are designed to be short-lived for security reasons. When an access token expires, instead of asking the user to log in again, the client can use the **refresh token** to obtain a new access token without requiring credentials.
+
+**How it works:**
+- The `login` endpoint returns both an `access_token` (short-lived, 15 minutes) and a `refresh_token` (long-lived, 7 days by default)
+- When the access token expires, the client sends the refresh token to the `/refresh` endpoint
+- The auth service validates the refresh token and issues a new access token
+- This keeps the user session alive without storing session state on the server (stateless authentication)
+
+**Security benefits:**
+- If an access token is compromised, its exposure window is limited (15 minutes)
+- Refresh tokens are typically stored securely and sent less frequently
+- Refresh tokens can be revoked server-side if needed
+
+See: https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/#What-Is-a-Refresh-Token- for more details.
+
+##### Extract Refresh Token
+```
+REFRESH_TOKEN=$(curl -s -X POST http://localhost/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_admin", "password": "securepassword123"}' \
+  | jq -r '.refresh_token')
+```
+
+##### Call refresh token api
+```
+curl -i http://localhost/api/v1/refresh \
+     -d "{\"refresh_token\":\"$REFRESH_TOKEN\"}"
+```
+
+
 ## Nginx
 
 Nginx serves as the API Gateway and authentication proxy for the library management system. It acts as the entry point for all client requests, handling routing, request interception, and token validation before forwarding requests to downstream services.
@@ -134,6 +165,7 @@ These SQL files are executed automatically during container startup, ensuring a 
 ## Authentication Service
 - [Project Structure](#1-project-structure)
 - [Launch the Application](#2-launching-the-application)
+- [Unit Test](#unit-testing)
 
 ### 1. Project Structure
 This project has been structured strictly separating the Domain, Application (Use Cases), Infrastructure (Adapters/Frameworks), and Presentation layers. The inner layers (Domain, Application) have zero dependencies on Django or external libraries; they solely depend on abstract interfaces.
@@ -182,20 +214,38 @@ python seed_db.py
 ```
 curl -i -X POST http://0.0.0.0:8000/api/v1/login \
      -H "Content-Type: application/json" \
-     -d '{"username": "test_admin", "password": "securepassword123"}'                                       
+     -d '{"username": "test_admin", "password": "securepassword123"}'
 ```
 
 ##### Testing Verify API
 ```
-#Extract Token
-TOKEN=$(curl -s -X POST http://0.0.0.0:8000/api/v1/login \
+#Extract Access Token
+ACCESS_TOKEN=$(curl -s -X POST http://0.0.0.0:8000/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"username": "test_admin", "password": "securepassword123"}' \
   | jq -r '.access_token')
 
 #Check token status
 curl -i http://0.0.0.0:8000/api/v1/verify \
-     -H "Authorization: Bearer $TOKEN"                                          
+     -H "Authorization: Bearer $ACCESS_TOKEN"
+```
+
+##### Testing Refresh API
+```
+#Extract Both Access Token and Refresh Token
+read ACCESS_TOKEN REFRESH_TOKEN < <(
+  curl -s -X POST http://0.0.0.0:8000/api/v1/login \
+    -H "Content-Type: application/json" \
+    -d '{"username":"test_admin","password":"securepassword123"}' \
+  | jq -r '[.access_token, .refresh_token] | @tsv'
+)
+
+echo "$ACCESS_TOKEN"
+echo "$REFRESH_TOKEN"
+
+#Generate new token
+curl -i -X POST http://0.0.0.0:8000/api/v1/refresh \
+     -d "{\"refresh_token\":\"$REFRESH_TOKEN\"}"
 ```
 
 #### For Production (PostgreSQL):
@@ -208,6 +258,22 @@ python manage.py migrate
 gunicorn auth_project.wsgi:application --bind 0.0.0.0:8000 --workers 3
 ```
 
+### Unit Testing
+```
+python -m unittest core/tests/application/use_cases/test_login_use_case.py
+
+python -m unittest core/tests/application/use_cases/test_verify_token_use_case.py
+```
+
+This Demonstrates Architectural Excellence:
+
+- **Zero Setup Time:** You can run ```python -m unittest core/tests/test_use_cases.py``` without Docker, without setting up PostgreSQL, and without running Django migrations.
+
+- **True Isolation:** If the test fails, you know exactly where the problem is: the business logic. It isn't failing because of a database connection timeout or a missing environment variable.
+
+- **Behavior Driven:** The tests strictly validate business rules (e.g., "Inactive users cannot log in" or "Failing passwords do not generate tokens") rather than framework quirks.
+
+- **Refactoring Safety:** If you decide to swap PyJWT for an external authentication provider (like Auth0 or AWS Cognito) later, your LoginUseCase and these tests will not change. You only rewrite the adapter (JwtTokenService) in the infrastructure layer.
 
 ## Notes:
 ### Verifying the dev sqlite migration state:

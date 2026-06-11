@@ -1,4 +1,5 @@
 from django.db import models
+#from django.db.models import Q, UniqueConstraint
 
 # Create your models here.
 
@@ -10,6 +11,7 @@ class RoleModel(models.Model):
 
     class Meta:
         db_table = 'role'
+    managed = False #  "These tables are managed externally, don't touch them"
 
 class UserModel(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -21,17 +23,18 @@ class UserModel(models.Model):
 
     class Meta:
         db_table = 'user'
+    managed = False
 
 class UserRoleModel(models.Model):
     id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(UserModel, db_column='user_id', on_delete=models.RESTRICT, related_name='user_roles')
-    role = models.ForeignKey(RoleModel, db_column='role_id', on_delete=models.RESTRICT)
+    user = models.ForeignKey(UserModel, db_column='user_id', on_delete=models.CASCADE, related_name='user_roles')
+    role = models.ForeignKey(RoleModel, db_column='role_id', on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
 
     class Meta:
         db_table = 'user_roles'
-        unique_together = ('user', 'role')
+    managed = False
 
 class LoginCredentialModel(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -44,3 +47,4 @@ class LoginCredentialModel(models.Model):
 
     class Meta:
         db_table = 'login_credential'
+    managed = False

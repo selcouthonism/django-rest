@@ -95,6 +95,8 @@ ENV = os.environ.get('ENVIRONMENT', 'dev')
 
 if ENV == 'prod':
     # PostgreSQL for Production (Note: In a real setup, use environment variables for these settings)
+    # .pg_service.conf .my_pgpass
+    # Connection pool
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -113,6 +115,22 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
+    },
+}
 
 
 # Password validation
