@@ -116,18 +116,66 @@ else:
         }
     }
 
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+
+    "formatters": {
+        "standard": {
+            "format": (
+                "%(asctime)s "
+                "[%(levelname)s] "
+                "[%(name)s] "
+                "[%(process)d] "
+                "[%(thread)d] "
+                "%(message)s"
+            ),
+        },
+    },
+
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "standard",
         },
     },
+
+    "root": {
+        "handlers": ["console"],
+        "level": LOG_LEVEL,
+    },
+
     "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        "django.request": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+
         "django.db.backends": {
             "handlers": ["console"],
             "level": "ERROR",
+            "propagate": False,
+        },
+
+        "auth_service": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
         },
     },
 }

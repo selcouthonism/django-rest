@@ -261,8 +261,8 @@ gunicorn auth_project.wsgi:application --bind 0.0.0.0:8000 --workers 3
 ### Unit Testing
 ```
 python -m unittest core/tests/application/use_cases/test_login_use_case.py
-
 python -m unittest core/tests/application/use_cases/test_verify_token_use_case.py
+python -m unittest core/tests/application/use_cases/test_refresh_token_use_case.py
 ```
 
 This Demonstrates Architectural Excellence:
@@ -298,4 +298,5 @@ DB_PORT=5432
 
 ENVIRONMENT=prod
 SECRET_KEY=your-super-secret-django-key
+LOG_LEVEL=ERROR
 ```

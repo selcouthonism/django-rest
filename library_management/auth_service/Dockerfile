@@ -1,7 +1,7 @@
 # ==========================================================
 # Stage 1: Builder
 # ==========================================================
-FROM python:3.11-slim AS builder
+FROM python:3.13-slim AS builder
 
 # Security and Python settings
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -12,7 +12,7 @@ WORKDIR /app
 
 # Install build dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,7 +31,7 @@ RUN pip install --upgrade pip && \
 # ==========================================================
 # Stage 2: Runtime
 # ==========================================================
-FROM python:3.11-slim AS runtime
+FROM python:3.13-slim AS runtime
 
 # Security and Python settings
 ENV PYTHONDONTWRITEBYTECODE=1 \

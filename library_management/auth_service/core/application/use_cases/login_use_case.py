@@ -13,10 +13,10 @@ class LoginUseCase:
         user = self.user_repo.get_by_username(username)
         if not user or not user.is_active:
             # To prevent timing attacks, we should still call verify_password with dummy data here to make the response time consistent regardless of whether the user exists or not.
-            self.hasher.verify_password(password, "", "")
+            self.hasher.verify_password(password, "")
             raise AuthenticationError("Invalid credentials")
 
-        if not self.hasher.verify_password(password, user.password_hash, user.salt):
+        if not self.hasher.verify_password(password, user.password_hash):
             raise AuthenticationError("Invalid credentials")
 
         return self.token_service.generate_tokens(user)
