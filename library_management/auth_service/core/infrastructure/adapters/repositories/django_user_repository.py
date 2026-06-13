@@ -30,7 +30,6 @@ class DjangoUserRepository(IUserRepository):
                 "user_id",
                 "username",
                 "password_hash",
-                "salt",
                 "is_active"
             )
             .get()
@@ -47,7 +46,6 @@ class DjangoUserRepository(IUserRepository):
             user_id=db_user.user_id,
             username=db_user.username,
             password_hash=db_user.password_hash,
-            salt=db_user.salt,
             is_active=db_user.is_active,
             roles=roles
         )
@@ -84,7 +82,6 @@ class DjangoUserRepository(IUserRepository):
                 "user_id",
                 "username",
                 "password_hash",
-                "salt",
                 "is_active"
             )
             .annotate(
@@ -104,7 +101,6 @@ class DjangoUserRepository(IUserRepository):
             user_id=result["user_id"],
             username=result["username"],
             password_hash=result["password_hash"],
-            salt=result["salt"],
             is_active=result["is_active"],
             roles=result["roles"] or []
         )

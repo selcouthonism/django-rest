@@ -25,7 +25,6 @@ class TestLoginUseCase(unittest.TestCase):
             user_id=1,
             username="test_admin",
             password_hash="hashed_pw123",
-            salt="salt123",
             is_active=True,
             roles=["Admin"]
         )
@@ -49,7 +48,7 @@ class TestLoginUseCase(unittest.TestCase):
         self.assertEqual(result["access_token"], "valid.jwt.token")
         self.mock_user_repo.get_by_username.assert_called_once_with("test_admin")
         self.mock_hasher.verify_password.assert_called_once_with(
-            "correct_password", "hashed_pw123", "salt123"
+            "correct_password", "hashed_pw123"
         )
         self.mock_token_service.generate_tokens.assert_called_once_with(self.valid_user)
 
@@ -65,7 +64,7 @@ class TestLoginUseCase(unittest.TestCase):
         #self.mock_hasher.verify_password.assert_not_called()
         
         # verify_passwor called to prevent timing attacks by always performing the hash check, even if user is not found
-        self.mock_hasher.verify_password.assert_called_once_with("any_password", "", "")
+        self.mock_hasher.verify_password.assert_called_once_with("any_password", "")
 
     def test_login_fails_when_user_inactive(self):
         # Arrange

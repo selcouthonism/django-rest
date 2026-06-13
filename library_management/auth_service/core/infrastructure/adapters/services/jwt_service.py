@@ -8,7 +8,6 @@ class JwtTokenService(ITokenService):
     def generate_tokens(self, user: LoginCredential) -> dict:
 
         #TODO: Consider adding a unique identifier (like jti) to the token payload for better token management (e.g., blacklisting).
-        #TODO: Get minutes and days for token expiration from settings instead of hardcoding them here.
         access_payload = {
             'user_id': user.user_id,
             'username': user.username,

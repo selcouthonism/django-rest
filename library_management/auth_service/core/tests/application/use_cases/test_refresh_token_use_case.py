@@ -23,7 +23,6 @@ class TestRefreshTokenUseCase(unittest.TestCase):
             user_id=1,
             username="test_admin",
             password_hash="hashed_pw123",
-            salt="salt123",
             is_active=True,
             roles=["Admin"]
         )
