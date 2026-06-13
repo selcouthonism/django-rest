@@ -298,4 +298,5 @@ DB_PORT=5432
 
 ENVIRONMENT=prod
 SECRET_KEY=your-super-secret-django-key
+LOG_LEVEL=ERROR
 ```
