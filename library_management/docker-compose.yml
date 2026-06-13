@@ -12,7 +12,7 @@ services:
       - backend_app_net
 
   nginx:
-    image: nginx:alpine
+    image: nginx:1.27-alpine-slim
     container_name: api_gateway
     ports:
       - 80:80
