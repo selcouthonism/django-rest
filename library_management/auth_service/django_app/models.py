@@ -20,7 +20,7 @@ class UserModel(models.Model):
     last_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=15, unique=True)
     email = models.CharField(max_length=255, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'user'
@@ -30,8 +30,8 @@ class UserRoleModel(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(UserModel, db_column='user_id', on_delete=models.CASCADE, related_name='user_roles')
     role = models.ForeignKey(RoleModel, db_column='role_id', on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    deleted_at = models.DateTimeField(null=True, blank=True, db_column='deleted_at')
+    created_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'user_roles'
@@ -43,9 +43,9 @@ class LoginCredentialModel(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password_hash = models.CharField(max_length=255)
     salt = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    updated_at = models.DateTimeField(auto_now_add=True, db_column='updated_at')
-    deleted_at = models.DateTimeField(null=True, blank=True, db_column='deleted_at')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'login_credential'
@@ -55,9 +55,9 @@ class RefreshTokenModel(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(UserModel, db_column='user_id', on_delete=models.CASCADE, related_name='refresh_token')
     token_hash = models.CharField(max_length=255, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
-    expires_at = models.DateTimeField(auto_now_add=False, db_column='expires_at')
-    revoked_at = models.DateTimeField(null=True, blank=True, db_column='revoked_at')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(auto_now_add=False)
+    revoked_at = models.DateTimeField(null=True, blank=True)
     replaced_by_token = models.ForeignKey('self',db_column='replaced_by_token_id',on_delete=models.SET_NULL,null=True,blank=True,related_name='replaced_tokens')
 
     class Meta:
