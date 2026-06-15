@@ -21,7 +21,7 @@ We will test Nginx routing, the Authentication Service, and the Nginx auth_reque
 #### 1. Login to get the JWT
 Hit Nginx on port 80, which will proxy the request directly to the auth_service.
 ```
-curl -X POST http://localhost/api/v1/login \
+curl -X POST http://localhost/api/v1/auth/login \
      -H "Content-Type: application/json" \
      -d '{"username": "test_admin", "password": "securepassword123"}'
 ```
@@ -35,6 +35,8 @@ Expected Response:
   "refresh_token": "eyJ0eXAi...<jwt_string>..."
 }
 ```
+
+See # https://www.iana.org/assignments/jwt/jwt.xhtml#claims
 
 #### 2. Access the Downstream Service WITHOUT a Token
 Let's attempt to access the textbook_rental service without providing the token. Nginx should intercept this and consult the auth_service's verify endpoint.
@@ -57,7 +59,7 @@ Copy the access_token from Test 1 and pass it in the Authorization header.
 
 ##### Extract Token
 ```
-TOKEN=$(curl -s -X POST http://localhost/api/v1/login \
+TOKEN=$(curl -s -X POST http://localhost/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "test_admin", "password": "securepassword123"}' \
   | jq -r '.access_token')
@@ -118,7 +120,7 @@ See: https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/#W
 
 ##### Extract Refresh Token
 ```
-REFRESH_TOKEN=$(curl -s -X POST http://localhost/api/v1/login \
+REFRESH_TOKEN=$(curl -s -X POST http://localhost/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "test_admin", "password": "securepassword123"}' \
   | jq -r '.refresh_token')
@@ -126,7 +128,7 @@ REFRESH_TOKEN=$(curl -s -X POST http://localhost/api/v1/login \
 
 ##### Call refresh token api
 ```
-curl -i http://localhost/api/v1/refresh \
+curl -i http://localhost/api/v1/auth/refresh \
      -d "{\"refresh_token\":\"$REFRESH_TOKEN\"}"
 ```
 
@@ -212,7 +214,7 @@ python seed_db.py
 
 ##### Testing Login API
 ```
-curl -i -X POST http://0.0.0.0:8000/api/v1/login \
+curl -i -X POST http://0.0.0.0:8000/api/v1/auth/login \
      -H "Content-Type: application/json" \
      -d '{"username": "test_admin", "password": "securepassword123"}'
 ```
@@ -220,13 +222,13 @@ curl -i -X POST http://0.0.0.0:8000/api/v1/login \
 ##### Testing Verify API
 ```
 #Extract Access Token
-ACCESS_TOKEN=$(curl -s -X POST http://0.0.0.0:8000/api/v1/login \
+ACCESS_TOKEN=$(curl -s -X POST http://0.0.0.0:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username": "test_admin", "password": "securepassword123"}' \
   | jq -r '.access_token')
 
 #Check token status
-curl -i http://0.0.0.0:8000/api/v1/verify \
+curl -i http://0.0.0.0:8000/api/v1/auth/verify \
      -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
@@ -234,7 +236,7 @@ curl -i http://0.0.0.0:8000/api/v1/verify \
 ```
 #Extract Both Access Token and Refresh Token
 read ACCESS_TOKEN REFRESH_TOKEN < <(
-  curl -s -X POST http://0.0.0.0:8000/api/v1/login \
+  curl -s -X POST http://0.0.0.0:8000/api/v1/auth/login \
     -H "Content-Type: application/json" \
     -d '{"username":"test_admin","password":"securepassword123"}' \
   | jq -r '[.access_token, .refresh_token] | @tsv'
@@ -244,7 +246,7 @@ echo "$ACCESS_TOKEN"
 echo "$REFRESH_TOKEN"
 
 #Generate new token
-curl -i -X POST http://0.0.0.0:8000/api/v1/refresh \
+curl -i -X POST http://0.0.0.0:8000/api/v1/auth/refresh \
      -d "{\"refresh_token\":\"$REFRESH_TOKEN\"}"
 ```
 
