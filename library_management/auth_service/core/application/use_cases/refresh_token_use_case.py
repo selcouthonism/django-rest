@@ -23,9 +23,9 @@ class RefreshTokenUseCase:
             # 2. Re-fetch the user to ensure they are still active and get current roles
             user = self.user_repo.get_by_id(user_id) 
             
-            if not user or not user.is_active:
+            if not user:
                 # Security Concern: Gives infomration about system. To mitigate this, we could log the event and return a generic error message.
-                raise AuthenticationError("User is inactive or deleted")
+                raise AuthenticationError("User is deleted")
 
             # 3. Generate a fresh pair of tokens
             return self.token_service.generate_tokens(user)

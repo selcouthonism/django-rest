@@ -25,7 +25,6 @@ class TestLoginUseCase(unittest.TestCase):
             user_id=1,
             username="test_admin",
             password_hash="hashed_pw123",
-            is_active=True,
             roles=["Admin"]
         )
 
@@ -65,16 +64,6 @@ class TestLoginUseCase(unittest.TestCase):
         
         # verify_passwor called to prevent timing attacks by always performing the hash check, even if user is not found
         self.mock_hasher.verify_password.assert_called_once_with("any_password", "")
-
-    def test_login_fails_when_user_inactive(self):
-        # Arrange
-        inactive_user = self.valid_user
-        inactive_user.is_active = False
-        self.mock_user_repo.get_by_username.return_value = inactive_user
-
-        # Act & Assert
-        with self.assertRaisesRegex(AuthenticationError, "Invalid credentials"):
-            self.use_case.execute("test_admin", "correct_password")
 
     def test_login_fails_on_incorrect_password(self):
         # Arrange

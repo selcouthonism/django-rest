@@ -24,7 +24,6 @@ def seed():
     UserRoleModel.objects.get_or_create(
         user=user,
         role=role,
-        defaults={'is_active': True}
     )
     print("Test user 'test_admin' assigned to 'ADMIN' role successfully.")
 
@@ -34,7 +33,6 @@ def seed():
             'user': user,
             'password_hash': make_password(password="securepassword123", salt="salt_0"),
             'salt': "salt_0",
-            'is_active': True,
         }
     )
     print(f"Login credential for 'test_admin' {'created' if created else 'already exists'}." )

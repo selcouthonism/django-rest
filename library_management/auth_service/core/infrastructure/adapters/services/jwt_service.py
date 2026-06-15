@@ -6,12 +6,14 @@ from core.domain.entities.login_credential import LoginCredential
 
 class JwtTokenService(ITokenService):
     def generate_tokens(self, user: LoginCredential) -> dict:
-
         #TODO: Consider adding a unique identifier (like jti) to the token payload for better token management (e.g., blacklisting).
+        # jti (JWT ID): Unique identifier; can be used to prevent the JWT from being replayed (allows a token to be used only once)
+        
         access_payload = {
             'user_id': user.user_id,
             'username': user.username,
             'roles': user.roles,
+            'iss': 'auth_service',
             'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=settings.ACCESS_TOKEN_EXPIRATION_MINUTES),
             'iat': datetime.datetime.now(datetime.timezone.utc)
         }

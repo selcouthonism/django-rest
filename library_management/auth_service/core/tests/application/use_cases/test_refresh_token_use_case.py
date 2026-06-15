@@ -23,7 +23,6 @@ class TestRefreshTokenUseCase(unittest.TestCase):
             user_id=1,
             username="test_admin",
             password_hash="hashed_pw123",
-            is_active=True,
             roles=["Admin"]
         )
 
@@ -86,24 +85,8 @@ class TestRefreshTokenUseCase(unittest.TestCase):
         self.mock_user_repo.get_by_id.return_value = None 
 
         # Act & Assert
-        with self.assertRaisesRegex(AuthenticationError, "User is inactive or deleted"):
+        with self.assertRaisesRegex(AuthenticationError, "User is deleted"):
             self.use_case.execute("valid.token.for.deleted.user")
-
-        # Ensure new tokens are never generated
-        self.mock_token_service.generate_tokens.assert_not_called()
-
-    def test_refresh_fails_when_user_is_inactive(self):
-        # Arrange
-        self.mock_token_service.verify_refresh_token.return_value = {"user_id": 1}
-        
-        # Simulate user account being disabled by an admin
-        inactive_user = self.valid_user
-        inactive_user.is_active = False
-        self.mock_user_repo.get_by_id.return_value = inactive_user
-
-        # Act & Assert
-        with self.assertRaisesRegex(AuthenticationError, "User is inactive or deleted"):
-            self.use_case.execute("valid.token.for.inactive.user")
 
         # Ensure new tokens are never generated
         self.mock_token_service.generate_tokens.assert_not_called()

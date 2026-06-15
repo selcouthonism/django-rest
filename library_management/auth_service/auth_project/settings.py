@@ -116,6 +116,11 @@ else:
         }
     }
 
+if ENV == 'prod': 
+    MANAGE_DB_TABLES=False
+else: 
+    MANAGE_DB_TABLES=True
+
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 LOGGING = {

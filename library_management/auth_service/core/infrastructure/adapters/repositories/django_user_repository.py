@@ -7,7 +7,7 @@ class DjangoUserRepository(IUserRepository):
         try:
             return self._get_login_credential(
                     username=username, 
-                    is_active=True
+                    deleted_at=None
             )
         except LoginCredentialModel.DoesNotExist:
             return None
@@ -16,7 +16,7 @@ class DjangoUserRepository(IUserRepository):
         try:
             return self._get_login_credential(
                 user_id=user_id, 
-                is_active=True
+                deleted_at=None
             )
         except LoginCredentialModel.DoesNotExist:
             return None
@@ -29,15 +29,14 @@ class DjangoUserRepository(IUserRepository):
             .only(
                 "user_id",
                 "username",
-                "password_hash",
-                "is_active"
+                "password_hash"
             )
             .get()
         )
 
         roles = list(
             UserRoleModel.objects
-            .filter(user_id=db_user.user_id, is_active=True)
+            .filter(user_id=db_user.user_id, deleted_at=None)
             .select_related("role")
             .values_list("role__role_name", flat=True)
         )
@@ -46,7 +45,6 @@ class DjangoUserRepository(IUserRepository):
             user_id=db_user.user_id,
             username=db_user.username,
             password_hash=db_user.password_hash,
-            is_active=db_user.is_active,
             roles=roles
         )
     

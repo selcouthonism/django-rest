@@ -11,7 +11,7 @@ class LoginUseCase:
 
     def execute(self, username: str, password: str) -> dict:
         user = self.user_repo.get_by_username(username)
-        if not user or not user.is_active:
+        if not user:
             # To prevent timing attacks, we should still call verify_password with dummy data here to make the response time consistent regardless of whether the user exists or not.
             self.hasher.verify_password(password, "")
             raise AuthenticationError("Invalid credentials")
