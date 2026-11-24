@@ -36,7 +36,7 @@ class DjangoUserRepository(IUserRepository):
 
         roles = list(
             UserRoleModel.objects
-            .filter(user_id=db_user.user_id, deleted_at=None)
+            .filter(user_id=db_user.user_id)
             .select_related("role")
             .values_list("role__role_name", flat=True)
         )

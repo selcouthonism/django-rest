@@ -8,5 +8,5 @@ class StandardPasswordHasher(IPasswordHasher):
     
 
     # Note: If you need to create users, you would add a method here:
-    def hash_password(self, plain_password: str, salt: str) -> str:
-        return make_password(plain_password, salt)
+    #def hash_password(self, plain_password: str, salt: str) -> str:
+    #    return make_password(plain_password, salt)

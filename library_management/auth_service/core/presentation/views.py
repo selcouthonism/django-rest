@@ -8,13 +8,16 @@ from django.views.decorators.csrf import csrf_exempt
 from core.application.use_cases.login_use_case import LoginUseCase
 from core.application.use_cases.verify_token_use_case import VerifyTokenUseCase
 from core.application.use_cases.refresh_token_use_case import RefreshTokenUseCase
+from core.application.use_cases.logout_use_case import LogoutUseCase
 from core.application.exceptions import AuthenticationError
 from core.infrastructure.adapters.repositories.django_user_repository import DjangoUserRepository
+from core.infrastructure.adapters.repositories.django_refresh_token_repository import DjangoRefreshTokenRepository
 from core.infrastructure.adapters.services.jwt_service import JwtTokenService
 from core.infrastructure.adapters.services.hash_service import StandardPasswordHasher # (Assume standard PBKDF2 implementation)
 
 # Dependency Injection Setup (In a larger app, use a DI container like python-dependency-injector)
 user_repo = DjangoUserRepository()
+refresh_token_repo = DjangoRefreshTokenRepository()
 token_service = JwtTokenService()
 hasher = StandardPasswordHasher()
 
@@ -28,7 +31,7 @@ def login_api(request):
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
     data = json.loads(request.body)
-    use_case = LoginUseCase(user_repo, hasher, token_service)
+    use_case = LoginUseCase(user_repo, refresh_token_repo,hasher, token_service)
     
     # No try/except needed! The middleware catches AuthenticationError
     result = use_case.execute(data.get('username'), data.get('password'))
@@ -68,8 +71,22 @@ def refresh_api(request):
     data = json.loads(request.body)
     refresh_token = data.get('refresh_token')
     
-    use_case = RefreshTokenUseCase(user_repo, token_service)
+    use_case = RefreshTokenUseCase(user_repo, refresh_token_repo, token_service)
     
     # Global exception middleware handles AuthenticationError
     result = use_case.execute(refresh_token)
     return JsonResponse(result, status=200)
+
+@csrf_exempt
+def logout_api(request):
+    if request.method != 'POST':
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+        
+    data = json.loads(request.body)
+    refresh_token = data.get('refresh_token')
+    
+    if refresh_token:
+        use_case = LogoutUseCase(refresh_token_repo)
+        use_case.execute(refresh_token)
+        
+    return JsonResponse({"message": "Successfully logged out"}, status=200)
