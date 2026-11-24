@@ -10,7 +10,7 @@ class RefreshToken:
     token: str
     expires_at: datetime.datetime
     revoked_at: Optional[datetime.datetime] = None
-    replaced_by_token: Optional[int] = None
+    replaced_by_token_id: Optional[int] = None
 
     @property
     def is_expired(self) -> bool:
@@ -28,7 +28,7 @@ class RefreshToken:
             token=token,
             expires_at=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=settings.REFRESH_TOKEN_EXPIRATION_DAYS),
             revoked_at=None,
-            replaced_by_token=None
+            replaced_by_token_id=None
         )
         return instance
 

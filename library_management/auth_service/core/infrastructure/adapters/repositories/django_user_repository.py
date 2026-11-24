@@ -6,8 +6,7 @@ class DjangoUserRepository(IUserRepository):
     def get_by_username(self, username: str) -> LoginCredential:
         try:
             return self._get_login_credential(
-                    username=username, 
-                    deleted_at=None
+                    username=username
             )
         except LoginCredentialModel.DoesNotExist:
             return None
@@ -15,8 +14,7 @@ class DjangoUserRepository(IUserRepository):
     def get_by_id(self, user_id: int) -> LoginCredential:
         try:
             return self._get_login_credential(
-                user_id=user_id, 
-                deleted_at=None
+                user_id=user_id
             )
         except LoginCredentialModel.DoesNotExist:
             return None

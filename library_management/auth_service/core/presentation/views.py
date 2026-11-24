@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def login_api(request):
-    logger.info("Received request at /api/v1/login")
+    logger.info("Received request at /api/v1/auth/login")
 
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -39,7 +39,7 @@ def login_api(request):
 
 @csrf_exempt
 def verify_api(request):
-    logger.info("Received request at /api/v1/verify")
+    logger.info("Received request at /api/v1/auth/verify")
 
     if request.method != 'GET':
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -63,7 +63,7 @@ def verify_api(request):
 
 @csrf_exempt
 def refresh_api(request):
-    logger.info("Received request at /api/v1/refresh")
+    logger.info("Received request at /api/v1/auth/refresh")
     
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -79,6 +79,8 @@ def refresh_api(request):
 
 @csrf_exempt
 def logout_api(request):
+    logger.info("Received request at /api/v1/auth/logout")
+
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
         

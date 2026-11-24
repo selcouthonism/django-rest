@@ -1,3 +1,5 @@
+from typing import Optional
+
 from core.domain.interfaces.repositories.refresh_token_repository import IRefreshTokenRepository
 from core.domain.entities.refresh_token import RefreshToken
 from django_app.models import RefreshTokenModel
@@ -14,7 +16,7 @@ class DjangoRefreshTokenRepository(IRefreshTokenRepository):
                 user_id=db_token.user_id,
                 expires_at=db_token.expires_at,
                 revoked_at=db_token.revoked_at,
-                replaced_by_token=db_token.replaced_by_token
+                replaced_by_token_id=db_token.replaced_by_token_id
             )
         except RefreshTokenModel.DoesNotExist:
             return None
@@ -28,22 +30,23 @@ class DjangoRefreshTokenRepository(IRefreshTokenRepository):
                 user_id=db_token.user_id,
                 expires_at=db_token.expires_at,
                 revoked_at=db_token.revoked_at,
-                replaced_by_token=db_token.replaced_by_token
+                replaced_by_token_id=db_token.replaced_by_token_id
             )
         except RefreshTokenModel.DoesNotExist:
             return None
 
-    def save(self, rt_entity: RefreshToken) -> None:
+    def save(self, rt_entity: RefreshToken) -> Optional[RefreshToken]:
         db_token, _ = RefreshTokenModel.objects.update_or_create(
             token=rt_entity.token,
             defaults={
                 'user_id': rt_entity.user_id,
                 'expires_at': rt_entity.expires_at,
                 'revoked_at': rt_entity.revoked_at,
-                'replaced_by_token': rt_entity.replaced_by_token
+                'replaced_by_token_id': rt_entity.replaced_by_token_id
             }
         )
         rt_entity.id = db_token.id
+        return db_token
 
     def revoke_all_for_user(self, user_id: int) -> None:
         RefreshTokenModel.objects.filter(user_id=user_id, revoked_at=None).update(revoked_at=datetime.datetime.now(datetime.timezone.utc))

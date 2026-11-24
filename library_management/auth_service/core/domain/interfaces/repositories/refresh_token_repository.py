@@ -13,7 +13,7 @@ class IRefreshTokenRepository(ABC):
         pass
 
     @abstractmethod
-    def save(self, refresh_token: RefreshToken) -> None:
+    def save(self, refresh_token: RefreshToken) -> Optional[RefreshToken]:
         """Update or create a refresh token in the database"""
         pass
 

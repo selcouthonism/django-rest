@@ -56,7 +56,7 @@ class RefreshTokenModel(models.Model):
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True, blank=True)
     # Tracks the rotation chain. If a token is reused, we know which one replaced it.
-    replaced_by_token = models.ForeignKey('self',db_column='replaced_by_token_id',on_delete=models.SET_NULL,null=True,blank=True,related_name='replaced_tokens')
+    replaced_by_token_id = models.ForeignKey('self',db_column='replaced_by_token_id',on_delete=models.SET_NULL,null=True,blank=True,related_name='replaced_tokens')
     #replaced_by_token = models.CharField(max_length=255, null=True, blank=True)
     
     def is_expired(self):
