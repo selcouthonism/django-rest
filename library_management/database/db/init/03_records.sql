@@ -9,77 +9,58 @@ INSERT INTO auth.role (role_name) VALUES
 ('USER'),
 ('SUPPORT'),
 ('MEMBER'),
-('GUEST')
+('GUEST'),
+('TESTER')
 ON CONFLICT (role_name) DO NOTHING;
 
 -- ------- Insert users -------
-INSERT INTO auth.user (first_name, last_name, phone, email) VALUES
-('Admin','Test','1000000001','test.admin@example.com'),
-('Alice','Smith','1000000002','alice.smith@example.com'),
-('Bob','Johnson','1000000003','bob.johnson@example.com'),
-('Charlie','Brown','1000000004','charlie.brown@example.com'),
-('Support','User','1000000005','support.user@example.com'),
-('Guest','User','1000000006','guest.user@example.com'),
-('Deleted','Credential','1000000007','deleted.user@example.com'),
-('RoleRemoved','User','1000000008','role.removed@example.com'),
-('RoleReassigned','User','2000000008','role.reassigned@example.com'),
-('NoRole','User','1000000009','norole.user@example.com'),
-('Expired','Token','1000000010','expired.user@example.com'),
-('Active','Token','1000000011','active.user@example.com'),
-('Revoked','Token','1000000012','revoked.user@example.com'),
-('Rotated','Token','1000000013','rotated.user@example.com')
-ON CONFLICT (email) DO NOTHING;
-
--- ------- Insert user roles -------
-INSERT INTO auth.user_roles (user_id, role_id) VALUES
-
-((SELECT id FROM auth.user WHERE email='test.admin@example.com'),
- (SELECT id FROM auth.role WHERE role_name='ADMIN')),
-
-((SELECT id FROM auth.user WHERE email='alice.smith@example.com'),
- (SELECT id FROM auth.role WHERE role_name='USER')),
-
-((SELECT id FROM auth.user WHERE email='bob.johnson@example.com'),
- (SELECT id FROM auth.role WHERE role_name='ADMIN')),
-
-((SELECT id FROM auth.user WHERE email='bob.johnson@example.com'),
- (SELECT id FROM auth.role WHERE role_name='USER')),
-
-((SELECT id FROM auth.user WHERE email='charlie.brown@example.com'),
- (SELECT id FROM auth.role WHERE role_name='MEMBER')),
-
-((SELECT id FROM auth.user WHERE email='support.user@example.com'),
- (SELECT id FROM auth.role WHERE role_name='SUPPORT')),
-
-((SELECT id FROM auth.user WHERE email='guest.user@example.com'),
- (SELECT id FROM auth.role WHERE role_name='GUEST'))
-
-ON CONFLICT DO NOTHING;
-
--- Soft-deleted role assignment
-INSERT INTO auth.user_roles (user_id, role_id, deleted_at) VALUES
-(
- (SELECT id FROM auth.user WHERE email='role.removed@example.com'),
- (SELECT id FROM auth.role WHERE role_name='USER'),
- CURRENT_TIMESTAMP - INTERVAL '30 days'
+WITH seed_users (first_name, last_name, phone, email) AS (
+    VALUES
+    ('Admin','Test','1000000001','test.admin@example.com'),
+    ('Alice','Smith','1000000002','alice.smith@example.com'),
+    ('Bob','Johnson','1000000003','bob.johnson@example.com'),
+    ('Charlie','Brown','1000000004','charlie.brown@example.com'),
+    ('Support','User','1000000005','support.user@example.com'),
+    ('Guest','User','1000000006','guest.user@example.com'),
+    ('Deleted','Credential','1000000007','deleted.user@example.com'),
+    ('RoleRemoved','User','1000000008','role.removed@example.com'),
+    ('RoleReassigned','User','2000000008','role.reassigned@example.com'),
+    ('NoRole','User','1000000009','norole.user@example.com'),
+    ('Expired','Token','1000000010','expired.user@example.com'),
+    ('Active','Token','1000000011','active.user@example.com'),
+    ('Revoked','Token','1000000012','revoked.user@example.com'),
+    ('Rotated','Token','1000000013','rotated.user@example.com')
 )
-ON CONFLICT DO NOTHING;
+INSERT INTO auth.user (first_name, last_name, phone, email)
+SELECT s.first_name, s.last_name, s.phone, s.email
+FROM seed_users AS s
+WHERE NOT EXISTS (
+    SELECT 1 FROM auth.user AS u WHERE u.email = s.email
+);
 
--- Soft-deleted role assignment, Reassign role
-INSERT INTO auth.user_roles (user_id, role_id, deleted_at) VALUES
-(
- (SELECT id FROM auth.user WHERE email='role.reassigned@example.com'),
- (SELECT id FROM auth.role WHERE role_name='USER'),
- CURRENT_TIMESTAMP - INTERVAL '30 days'
+-- ------- Insert current user roles -------
+-- The schema has no deleted_at column or unique user-role constraint.
+WITH seed_user_roles (email, role_name) AS (
+    VALUES
+    ('test.admin@example.com', 'ADMIN'),
+    ('alice.smith@example.com', 'USER'),
+    ('bob.johnson@example.com', 'ADMIN'),
+    ('bob.johnson@example.com', 'USER'),
+    ('charlie.brown@example.com', 'MEMBER'),
+    ('support.user@example.com', 'SUPPORT'),
+    ('guest.user@example.com', 'GUEST'),
+    ('role.reassigned@example.com', 'USER')
 )
-ON CONFLICT DO NOTHING;
-
-INSERT INTO auth.user_roles (user_id, role_id) VALUES
-(
- (SELECT id FROM auth.user WHERE email='role.reassigned@example.com'),
- (SELECT id FROM auth.role WHERE role_name='USER')
-)
-ON CONFLICT DO NOTHING;
+INSERT INTO auth.user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM seed_user_roles AS s
+JOIN auth.user AS u ON u.email = s.email
+JOIN auth.role AS r ON r.role_name = s.role_name
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM auth.user_roles AS ur
+    WHERE ur.user_id = u.id AND ur.role_id = r.id
+);
 
 -- ------- Insert login credentials -------
 INSERT INTO auth.login_credential (user_id, username, password_hash, salt) VALUES
@@ -120,45 +101,35 @@ INSERT INTO auth.login_credential (user_id, username, password_hash, salt) VALUE
 
 ON CONFLICT DO NOTHING;
 
--- Soft Deleted Credential
-INSERT INTO auth.login_credential
-(
-    user_id,
-    username,
-    password_hash,
-    salt,
-    deleted_at
-)
-VALUES
-(
- (SELECT id FROM auth.user WHERE email='deleted.user@example.com'), 'deleted_user',
- 'password_hash_deleted','salt_deleted',
-  CURRENT_TIMESTAMP - INTERVAL '60 days'
-)
-ON CONFLICT DO NOTHING;
+-- deleted.user@example.com intentionally has no login credential.
+-- The schema has no deleted_at column to represent a soft-deleted credential.
 
 -- ------- Insert Refresh Tokens -------
--- Active Token
-INSERT INTO auth.refresh_token (user_id,token_hash,expires_at) VALUES
-( (SELECT id FROM auth.user WHERE email='active.user@example.com'), 
-  'ACTIVE_TOKEN_HASH', 
-  CURRENT_TIMESTAMP + INTERVAL '30 days'
-);
+-- These are development fixtures, not production credentials.
+INSERT INTO auth.refresh_token (user_id, token, expires_at)
+SELECT u.id, 'ACTIVE_TOKEN', CURRENT_TIMESTAMP + INTERVAL '30 days'
+FROM auth.user AS u
+WHERE u.email = 'active.user@example.com'
+    AND NOT EXISTS (
+            SELECT 1 FROM auth.refresh_token AS rt WHERE rt.token = 'ACTIVE_TOKEN'
+    );
 
--- Expired Token
-INSERT INTO auth.refresh_token (user_id,token_hash,expires_at) VALUES
-( (SELECT id FROM auth.user WHERE email='expired.user@example.com'),
-  'EXPIRED_TOKEN_HASH', 
-  CURRENT_TIMESTAMP - INTERVAL '1 day'
-);
+INSERT INTO auth.refresh_token (user_id, token, expires_at)
+SELECT u.id, 'EXPIRED_TOKEN', CURRENT_TIMESTAMP - INTERVAL '1 day'
+FROM auth.user AS u
+WHERE u.email = 'expired.user@example.com'
+    AND NOT EXISTS (
+            SELECT 1 FROM auth.refresh_token AS rt WHERE rt.token = 'EXPIRED_TOKEN'
+    );
 
- -- Revoken Token
-INSERT INTO auth.refresh_token (user_id,token_hash,expires_at,revoked_at) VALUES
-( (SELECT id FROM auth.user WHERE email='revoked.user@example.com'),
-  'REVOKED_TOKEN_HASH',
-  CURRENT_TIMESTAMP + INTERVAL '30 days',
-  CURRENT_TIMESTAMP - INTERVAL '5 days'
-);
+INSERT INTO auth.refresh_token (user_id, token, expires_at, revoked_at)
+SELECT u.id, 'REVOKED_TOKEN', CURRENT_TIMESTAMP + INTERVAL '30 days',
+             CURRENT_TIMESTAMP - INTERVAL '5 days'
+FROM auth.user AS u
+WHERE u.email = 'revoked.user@example.com'
+    AND NOT EXISTS (
+            SELECT 1 FROM auth.refresh_token AS rt WHERE rt.token = 'REVOKED_TOKEN'
+    );
 
  -- Refresh Token Rotation Chain
 BEGIN;
@@ -175,44 +146,49 @@ BEGIN;
         FROM auth.user
         WHERE email = 'rotated.user@example.com';
 
-        -- Token A (old token, now revoked)
-        INSERT INTO auth.refresh_token
-        (
-            user_id,
-            token_hash,
-            expires_at,
-            revoked_at
-        )
-        VALUES
-        (
-            v_user_id,
-            'ROTATION_TOKEN_A',
-            CURRENT_TIMESTAMP + INTERVAL '30 days',
-            CURRENT_TIMESTAMP - INTERVAL '10 days'
-        )
-        RETURNING id
-        INTO v_token_a_id;
+        IF v_user_id IS NOT NULL AND NOT EXISTS (
+            SELECT 1 FROM auth.refresh_token
+            WHERE token IN ('ROTATION_TOKEN_A', 'ROTATION_TOKEN_B')
+        ) THEN
+            -- Token A (old token, now revoked)
+            INSERT INTO auth.refresh_token
+            (
+                user_id,
+                token,
+                expires_at,
+                revoked_at
+            )
+            VALUES
+            (
+                v_user_id,
+                'ROTATION_TOKEN_A',
+                CURRENT_TIMESTAMP + INTERVAL '30 days',
+                CURRENT_TIMESTAMP - INTERVAL '10 days'
+            )
+            RETURNING id
+            INTO v_token_a_id;
 
-        -- Token B (new active token)
-        INSERT INTO auth.refresh_token
-        (
-            user_id,
-            token_hash,
-            expires_at
-        )
-        VALUES
-        (
-            v_user_id,
-            'ROTATION_TOKEN_B',
-            CURRENT_TIMESTAMP + INTERVAL '30 days'
-        )
-        RETURNING id
-        INTO v_token_b_id;
+            -- Token B (new active token)
+            INSERT INTO auth.refresh_token
+            (
+                user_id,
+                token,
+                expires_at
+            )
+            VALUES
+            (
+                v_user_id,
+                'ROTATION_TOKEN_B',
+                CURRENT_TIMESTAMP + INTERVAL '30 days'
+            )
+            RETURNING id
+            INTO v_token_b_id;
 
-        -- Link token chain
-        UPDATE auth.refresh_token
-        SET replaced_by_token_id = v_token_b_id
-        WHERE id = v_token_a_id;
+            -- Link token chain
+            UPDATE auth.refresh_token
+            SET replaced_by_token_id = v_token_b_id
+            WHERE id = v_token_a_id;
+        END IF;
 
     END $$;
 
