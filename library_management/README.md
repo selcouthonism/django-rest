@@ -254,6 +254,26 @@ curl -i -X POST http://0.0.0.0:8000/api/v1/auth/refresh \
      -d "{\"refresh_token\":\"$REFRESH_TOKEN\"}"
 ```
 
+##### Testing Logout API
+Login and Extract Both Access and Refresh Token:
+```
+read ACCESS_TOKEN REFRESH_TOKEN < <(
+  curl -s -X POST http://0.0.0.0:8000/api/v1/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"username":"test_admin","password":"securepassword123"}' \
+  | jq -r '[.access_token, .refresh_token] | @tsv'
+)
+
+echo "$ACCESS_TOKEN"
+echo "$REFRESH_TOKEN"
+```
+
+Logout:
+```
+curl -i -X POST http://0.0.0.0:8000/api/v1/auth/logout \
+     -d "{\"refresh_token\":\"$REFRESH_TOKEN\"}"
+```
+
 #### For Production (PostgreSQL):
 In production, you would typically run this behind an application server like Gunicorn, rather than Django's built-in dev server.
 
@@ -269,6 +289,7 @@ gunicorn auth_project.wsgi:application --bind 0.0.0.0:8000 --workers 3
 python -m unittest core/tests/application/use_cases/test_login_use_case.py
 python -m unittest core/tests/application/use_cases/test_verify_token_use_case.py
 python -m unittest core/tests/application/use_cases/test_refresh_token_use_case.py
+python -m unittest core/tests/application/use_cases/test_logout_use_case.py
 ```
 
 This Demonstrates Architectural Excellence:

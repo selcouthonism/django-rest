@@ -1,5 +1,5 @@
 
-from datetime import datetime
+import datetime
 from core.domain.interfaces.repositories.refresh_token_repository import IRefreshTokenRepository
 
 class LogoutUseCase:
